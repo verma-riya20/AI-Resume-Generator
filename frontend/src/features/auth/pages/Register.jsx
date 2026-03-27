@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import '../auth.form.scss'
 import { useNavigate, Link } from 'react-router'
 import { useAuth } from '../hooks/useAuth'
+import BackHomeArrow from '../../../components/BackHomeArrow'
 
 
 function Register() {
@@ -12,36 +13,60 @@ function Register() {
   const [password, setpassword] = useState("")
 const handleSubmit=async(e)=>{
     e.preventDefault()
-    await handleRegister({ username, email, password })
-  navigate('/dashboard')
+    try {
+      await handleRegister({ username, email, password })
+      navigate('/dashboard')
+    } catch (error) {
+      alert(error.message)
+    }
 }
 
 if(loading){
-  return (<main className="auth-page"><h1>Loading......</h1></main>)
+  return (
+    <main className="auth-page">
+      <p className="loading-text">Loading...</p>
+    </main>
+  )
 }
 
   return (
     <main className="auth-page">
-      <div className="form-container">
-          <h1>Register</h1>
-        <form onSubmit={handleSubmit}>
-             <div className="input-group">
-               <label htmlFor="username">Username</label>
-               <input onChange={(e)=>{setusername(e.target.value)}} type="text" id="username" name="username" placeholder="Enter your usernaem"/>
-            </div>
-            <div className="input-group">
-               <label htmlFor="email">Email</label>
-               <input onChange={(e)=>{setemail(e.target.value)}} type="email" id="email" name="email" placeholder="Enter email address"/>
-            </div>
-            <div className="input-group">
-               <label htmlFor="password">Password</label>
-               <input onChange={(e)=>{setpassword(e.target.value)}} type="password" id="password" name="password" placeholder="Enter your password"/>
-            </div>
-            <button className="button primary-button">Register</button>
-        </form>
+      <BackHomeArrow />
+      <section className="auth-shell" aria-label="Authentication">
+        <aside className="auth-copy">
+          <Link to="/" className="brand-link">AceMatchAI</Link>
+          <p className="copy-tag">AI-Powered Career Advantage</p>
+          <h2>Create Your Interview Intelligence Profile</h2>
+          <p>
+            Join the platform and unlock resume optimization, interview analytics,
+            and role-specific strategy in one streamlined workspace.
+          </p>
+        </aside>
 
-        <p>Already have an account?<Link to={"/login"}>Login</Link></p>
-      </div>
+        <div className="form-container">
+          <p className="form-kicker">Get Started</p>
+          <h1>Register</h1>
+          <p className="form-subtitle">Create your account to begin.</p>
+
+          <form onSubmit={handleSubmit}>
+            <div className="input-group">
+              <label htmlFor="username">Username</label>
+              <input onChange={(e)=>{setusername(e.target.value)}} type="text" id="username" name="username" placeholder="Enter your username"/>
+            </div>
+            <div className="input-group">
+              <label htmlFor="email">Email</label>
+              <input onChange={(e)=>{setemail(e.target.value)}} type="email" id="email" name="email" placeholder="Enter email address"/>
+            </div>
+            <div className="input-group">
+              <label htmlFor="password">Password</label>
+              <input onChange={(e)=>{setpassword(e.target.value)}} type="password" id="password" name="password" placeholder="Create a strong password"/>
+            </div>
+            <button className="button primary-button">Create Account</button>
+          </form>
+
+          <p className="auth-switch">Already have an account? <Link to={"/login"}>Login</Link></p>
+        </div>
+      </section>
     </main>
   )
 }

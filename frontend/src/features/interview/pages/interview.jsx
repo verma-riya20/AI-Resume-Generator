@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import '../style/interview.scss'
 import { useInterview } from '../hooks/useInterview'
 import { useParams } from 'react-router'
+import BackHomeArrow from '../../../components/BackHomeArrow'
 
 const DEFAULT_ANSWER = 'Explain your approach clearly with a concrete example.'
 
@@ -191,6 +192,7 @@ function Interview() {
   if (loading && !data) {
     return (
       <main className="interview-page">
+        <BackHomeArrow />
         <section className="interview-shell" aria-label="Interview report">
           <p>Loading interview report...</p>
         </section>
@@ -201,6 +203,7 @@ function Interview() {
   if (!data) {
     return (
       <main className="interview-page">
+        <BackHomeArrow />
         <section className="interview-shell" aria-label="Interview report">
           <p>Interview report not found.</p>
         </section>
@@ -210,6 +213,7 @@ function Interview() {
 
   return (
     <main className="interview-page">
+      <BackHomeArrow />
       <section className="interview-shell" aria-label="Interview report">
         <aside className="left-nav" aria-label="Interview sections">
           <p className="nav-label">Sections</p>

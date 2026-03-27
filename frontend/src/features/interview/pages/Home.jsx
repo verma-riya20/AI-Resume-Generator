@@ -3,6 +3,7 @@ import "../style/home.scss"
 import { useState,useRef,useEffect } from 'react'
 import { useInterview } from '../hooks/useInterview'
 import { useNavigate } from 'react-router'
+import BackHomeArrow from '../../../components/BackHomeArrow'
 
 function Home() {
   const {loading,generateReport,reports,getReports}=useInterview()
@@ -34,6 +35,7 @@ function Home() {
 
     return (
          <main className="home">
+      <BackHomeArrow />
       <section className="plan-card" aria-label="Create interview plan">
         <header className="plan-header">
           <h1>
