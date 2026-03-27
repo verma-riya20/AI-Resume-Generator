@@ -1,7 +1,7 @@
 import axios from 'axios'
 //to refrain from repeating same code
 const api=axios.create({
-    baseURL:"http://localhost:3000",
+  baseURL:"https://ai-resume-generator-u8tb.onrender.com",
     withCredentials:true      //written to enable server to get the cookies
 })
 export async function register({username,email,password}){

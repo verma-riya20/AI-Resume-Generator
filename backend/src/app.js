@@ -4,7 +4,7 @@ const cookieParser=require('cookie-parser')
 const cors=require('cors')
 const app=express()
 app.use(cors({
-    origin:"http://localhost:5173",
+    origin:["http://localhost:5173","https://ai-resume-generator-vert.vercel.app/"],
     credentials:true
 }))
 app.use(express.json())
