@@ -1,6 +1,8 @@
 import axios from 'axios';
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://ai-resume-generator-u8tb.onrender.com"
+
 const api=axios.create({
-    baseURL:"https://ai-resume-generator-u8tb.onrender.com",
+    baseURL: API_BASE_URL,
     withCredentials:true
 })
 
