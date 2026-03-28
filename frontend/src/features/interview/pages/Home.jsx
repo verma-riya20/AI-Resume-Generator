@@ -60,11 +60,11 @@ function Home() {
               onChange={(e)=>setJobDescription(e.target.value)}
               id="jobDescription"
               name="jobDescription"
-              maxLength={1000}
+              maxLength={2000}
               placeholder="Paste the full job description here... e.g. Senior Frontend Engineer at Google requires proficiency in React, TypeScript, and large-scale system design..."
             />
 
-            <p className="meta">{jobDescription.length} / 1000 chars</p>
+            <p className="meta">{jobDescription.length} / 2000 chars</p>
           </article>
 
           <article className="panel right-panel">
