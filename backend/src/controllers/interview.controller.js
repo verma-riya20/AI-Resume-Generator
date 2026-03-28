@@ -2,6 +2,47 @@ const pdfParse=require("pdf-parse")
 const { interviewReportModel } = require("../models/interviewReport.model")
 const  {generateInterviewReport,generateResumePdf} = require('../services/ai.services')
 
+async function extractResumeText(fileBuffer) {
+   const errors = []
+
+   // Strategy 1: pdf-parse v2 class API with Buffer input.
+   try {
+      const parser = new pdfParse.PDFParse(fileBuffer)
+      const result = await parser.getText()
+      if (typeof result?.text === 'string' && result.text.trim()) {
+         return result.text
+      }
+   } catch (error) {
+      errors.push(error)
+   }
+
+   // Strategy 2: pdf-parse v2 class API with Uint8Array input.
+   try {
+      const parser = new pdfParse.PDFParse(Uint8Array.from(fileBuffer))
+      const result = await parser.getText()
+      if (typeof result?.text === 'string' && result.text.trim()) {
+         return result.text
+      }
+   } catch (error) {
+      errors.push(error)
+   }
+
+   // Strategy 3: backward-compatible function API when available.
+   try {
+      if (typeof pdfParse === 'function') {
+         const result = await pdfParse(fileBuffer)
+         if (typeof result?.text === 'string' && result.text.trim()) {
+            return result.text
+         }
+      }
+   } catch (error) {
+      errors.push(error)
+   }
+
+   const firstError = errors[0]
+   throw firstError || new Error('Unable to parse resume PDF text.')
+}
+
 function deriveTitle(jobDescription = '') {
    if (!jobDescription || typeof jobDescription !== 'string') {
       return 'Interview Preparation Report'
@@ -26,6 +67,7 @@ async function generateInterviewReportController(req,res){
    try {
        const resumeFile=req.file
        const {selfDescription,jobDescription}=req.body
+   let resumeParsingFailed = false
 
        if (!jobDescription || !jobDescription.trim()) {
           return res.status(400).json({ message: "Job description is required" })
@@ -38,17 +80,12 @@ async function generateInterviewReportController(req,res){
        let resumeText = ''
        if (resumeFile) {
           try {
-             const resumeContent=await (new pdfParse.PDFParse(Uint8Array.from(resumeFile.buffer))).getText()
-             resumeText = resumeContent?.text || ''
+             resumeText = await extractResumeText(resumeFile.buffer)
           } catch (parseError) {
-             if (!selfDescription || !selfDescription.trim()) {
-                return res.status(400).json({
-                   message: 'Resume parsing failed. Please upload a valid PDF file or use self-description.'
-                })
-             }
-
-             // If self-description exists, continue generation without parsed resume text.
+             // Continue generation with available inputs (self-description / job description)
+             // when PDF text extraction fails for specific PDF structures.
              resumeText = ''
+             resumeParsingFailed = true
           }
        }
 
@@ -77,8 +114,11 @@ async function generateInterviewReportController(req,res){
        })
 
        res.status(201).json({
-        message:"Interview Report Generated Successfully",
-        interviewReport
+        message: resumeParsingFailed
+           ? "Interview report generated, but resume text could not be extracted from this PDF."
+           : "Interview Report Generated Successfully",
+        interviewReport,
+        resumeParsingFailed
        })
    } catch (error) {
        console.error('Interview Generation Error:', error)

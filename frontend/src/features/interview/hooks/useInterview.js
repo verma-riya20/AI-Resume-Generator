@@ -15,7 +15,7 @@ export const useInterview=()=>{
         try {
             const response=await generateInterviewReport({jobDescription,selfDescription,resumeFile})
             setReport(response.interviewReport)
-            return response.interviewReport
+            return response
         } catch (error) {
             const errorMsg = error?.response?.data?.message || error.message || "Failed to generate report"
             console.error("Error generating interview report:", errorMsg)

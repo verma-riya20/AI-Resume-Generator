@@ -46,7 +46,8 @@ function Home() {
         const loadingToastId = toast.loading('Generating your interview strategy...')
         try {
             const resumeFile=resumeInputref.current.files[0]
-            const generatedReport=await generateReport({jobDescription,selfDescription,resumeFile})
+            const response=await generateReport({jobDescription,selfDescription,resumeFile})
+            const generatedReport=response?.interviewReport
             toast.update(loadingToastId, {
               render: 'Interview strategy generated successfully!',
               type: 'success',
@@ -54,6 +55,11 @@ function Home() {
               autoClose: 2500,
               closeOnClick: true,
             })
+
+            if (response?.resumeParsingFailed) {
+              toast.warning('Your PDF was uploaded, but text extraction failed. The report was generated without resume text.')
+            }
+
             if (generatedReport?._id) {
               navigate(`/interview/${generatedReport._id}`)
             }
