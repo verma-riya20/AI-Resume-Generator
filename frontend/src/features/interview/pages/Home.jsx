@@ -21,6 +21,23 @@ function Home() {
     const handleFileUpload = (e) => {
       const file = e.target.files[0]
       if (file) {
+        const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
+        const maxSizeInBytes = 3 * 1024 * 1024
+
+        if (!isPdf) {
+          toast.error('Only PDF resumes are supported.')
+          e.target.value = ''
+          setUploadedFile(null)
+          return
+        }
+
+        if (file.size > maxSizeInBytes) {
+          toast.error('Resume file size must be 3MB or less.')
+          e.target.value = ''
+          setUploadedFile(null)
+          return
+        }
+
         setUploadedFile(file.name)
       }
     }
@@ -116,11 +133,11 @@ function Home() {
                       </svg>
                     </span>
                     <strong>Click to upload or drag and drop</strong>
-                    <small>PDF or DOCX, Max 5MB</small>
+                    <small>PDF only, Max 3MB</small>
                   </>
                 )}
               </label>
-              <input ref={resumeInputref} hidden type="file" id="resume" name="resume" accept=".pdf,.doc,.docx" onChange={handleFileUpload} />
+              <input ref={resumeInputref} hidden type="file" id="resume" name="resume" accept=".pdf,application/pdf" onChange={handleFileUpload} />
             </div>
 
             <div className="divider" aria-hidden="true">

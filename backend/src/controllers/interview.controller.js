@@ -41,9 +41,14 @@ async function generateInterviewReportController(req,res){
              const resumeContent=await (new pdfParse.PDFParse(Uint8Array.from(resumeFile.buffer))).getText()
              resumeText = resumeContent?.text || ''
           } catch (parseError) {
-             return res.status(400).json({
-                message: 'Resume parsing failed. Please upload a valid PDF file or use self-description.'
-             })
+             if (!selfDescription || !selfDescription.trim()) {
+                return res.status(400).json({
+                   message: 'Resume parsing failed. Please upload a valid PDF file or use self-description.'
+                })
+             }
+
+             // If self-description exists, continue generation without parsed resume text.
+             resumeText = ''
           }
        }
 
