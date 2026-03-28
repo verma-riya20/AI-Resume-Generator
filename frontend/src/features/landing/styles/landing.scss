@@ -652,9 +652,9 @@
 
   .primary-btn {
     margin-top: 0.9rem;
-    background: linear-gradient(130deg, #9ca8ff, #b5c3ff);
-    color: #1a2950;
-    box-shadow: 0 10px 26px rgba(128, 148, 255, 0.35);
+    background: linear-gradient(130deg, var(--accent), var(--accent-2));
+    color: #ffffff;
+    box-shadow: 0 10px 26px rgba(255, 15, 115, 0.28);
     min-width: 10.8rem;
   }
 }
@@ -797,9 +797,9 @@
       }
 
       .nav-cta {
-        background: rgba(157, 168, 255, 0.18);
-        border-color: rgba(157, 168, 255, 0.4);
-        color: #dce6ff;
+        background: rgba(255, 15, 115, 0.16);
+        border-color: rgba(253, 79, 155, 0.38);
+        color: #ffe8f3;
       }
     }
   }
