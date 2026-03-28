@@ -37,8 +37,14 @@ async function generateInterviewReportController(req,res){
 
        let resumeText = ''
        if (resumeFile) {
-          const resumeContent=await (new pdfParse.PDFParse(Uint8Array.from(resumeFile.buffer))).getText()
-          resumeText = resumeContent?.text || ''
+          try {
+             const resumeContent=await (new pdfParse.PDFParse(Uint8Array.from(resumeFile.buffer))).getText()
+             resumeText = resumeContent?.text || ''
+          } catch (parseError) {
+             return res.status(400).json({
+                message: 'Resume parsing failed. Please upload a valid PDF file or use self-description.'
+             })
+          }
        }
 
        const interviewReportByAi=await generateInterviewReport({
@@ -71,15 +77,18 @@ async function generateInterviewReportController(req,res){
        })
    } catch (error) {
        console.error('Interview Generation Error:', error)
-       
-       // Check if error is from Gemini API
-       if (error?.message?.includes('Gemini') || error?.message?.includes('overloaded') || error?.message?.includes('quota')) {
-           return res.status(503).json({ 
-               message: error.message 
+
+         if (error?.isGeminiError) {
+           const statusCode = Number(error?.statusCode) || 503
+           return res.status(statusCode).json({
+             message: error.message
            })
-       }
-       
-       // Default error response
+         }
+
+         if (error?.statusCode && Number.isFinite(Number(error.statusCode))) {
+           return res.status(Number(error.statusCode)).json({ message: error.message })
+         }
+
        res.status(500).json({ 
            message: error?.message || "Failed to generate interview report. Please try again." 
        })

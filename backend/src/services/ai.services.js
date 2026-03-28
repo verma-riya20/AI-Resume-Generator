@@ -7,6 +7,45 @@ const ai=new GoogleGenAI({
     apiKey:process.env.GOOGLE_GENAI_KEY
 })
 
+function buildGeminiError(error, fallbackMessage) {
+    const code = error?.error?.code || error?.status || 500
+    const normalizedCode = Number(code)
+
+    let message = fallbackMessage
+    if (normalizedCode === 429) {
+        message = 'Gemini quota exceeded. Please try again later.'
+    } else if (normalizedCode === 503) {
+        message = 'Gemini API is currently overloaded. Please try again in a moment.'
+    } else if (error?.error?.message || error?.message) {
+        message = error?.error?.message || error?.message
+    }
+
+    const wrappedError = new Error(message)
+    wrappedError.statusCode = Number.isFinite(normalizedCode) ? normalizedCode : 500
+    wrappedError.isGeminiError = true
+    return wrappedError
+}
+
+async function retryWithBackoff(fn, maxRetries = 3, baseDelayMs = 800) {
+    let lastError
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            return await fn()
+        } catch (error) {
+            lastError = error
+            const code = Number(error?.error?.code || error?.status)
+            const retryable = code === 429 || code === 503
+            if (!retryable || attempt === maxRetries) break
+
+            const delayMs = baseDelayMs * Math.pow(2, attempt - 1)
+            await new Promise((resolve) => setTimeout(resolve, delayMs))
+        }
+    }
+
+    throw lastError
+}
+
 const interviewReportSchema=z.object({
     matchScore:z.number().describe("A score between 0 and 100 indicating how well the candidate's profile matches the job description ")
     ,
@@ -224,13 +263,15 @@ Candidate details:
     Job Description:${safeJobDescription}`
 
     try {
-        const response=await ai.models.generateContent({
-            model:'gemini-3-flash-preview',
-            contents:prompt,
-            config:{
-                responseMimeType:"application/json",
-                responseSchema:zodToJsonSchema(interviewReportSchema)
-            }
+        const response = await retryWithBackoff(async () => {
+            return await ai.models.generateContent({
+                model:'gemini-3-flash-preview',
+                contents:prompt,
+                config:{
+                    responseMimeType:"application/json",
+                    responseSchema:zodToJsonSchema(interviewReportSchema)
+                }
+            })
         })
 
         const parsed = JSON.parse(response.text)
@@ -254,11 +295,7 @@ Candidate details:
         console.log(parsed)
         return parsed
     } catch (error) {
-        if (error && error.status === 429) {
-            console.warn('Gemini quota exceeded (429). Retry after a short delay or upgrade billing limits.')
-            return null
-        }
-        throw error
+        throw buildGeminiError(error, 'Failed to generate interview report. Please try again.')
     }
 }
 async function PdfFromHtml(htmlContent){
@@ -309,37 +346,7 @@ async function generateResumePdf({resume,selfDescription,jobDescription}){
        const pdfBuffer=await PdfFromHtml(jsonContent.html)
        return pdfBuffer
    } catch (error) {
-       console.error('Gemini Resume PDF Error:', error)
-       
-       // Handle specific Gemini API errors
-       if (error?.error?.code === 503 || error?.status === 'UNAVAILABLE') {
-           const message = 'Gemini API is currently overloaded. Please try again in a moment.'
-           console.error(message)
-           throw new Error(message)
-       }
-       
-       if (error?.error?.code === 429) {
-           const message = 'Gemini quota exceeded. Please try again later or upgrade your plan.'
-           console.warn(message)
-           throw new Error(message)
-       }
-       
-       if (error?.error?.code === 403 || error?.error?.code === 401) {
-           const message = 'Authentication error with Gemini API. Please contact support.'
-           console.error(message)
-           throw new Error(message)
-       }
-       
-       if (error?.error?.code === 400) {
-           const message = 'Invalid request to Gemini API. Please check your input and try again.'
-           console.error(message)
-           throw new Error(message)
-       }
-       
-       // Default error message
-       const message = error?.error?.message || error?.message || 'Failed to generate resume PDF. Please try again.'
-       console.error('Gemini Error:', message)
-       throw new Error(message)
+       throw buildGeminiError(error, 'Failed to generate resume PDF. Please try again.')
    }
 }
 module.exports={generateInterviewReport,generateResumePdf}
