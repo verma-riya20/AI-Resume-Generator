@@ -22,7 +22,6 @@ function Home() {
       const file = e.target.files[0]
       if (file) {
         setUploadedFile(file.name)
-        setTimeout(() => setUploadedFile(null), 3000)
       }
     }
 
