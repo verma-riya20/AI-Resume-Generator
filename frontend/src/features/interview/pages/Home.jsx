@@ -4,6 +4,7 @@ import { useState,useRef,useEffect } from 'react'
 import { useInterview } from '../hooks/useInterview'
 import { useNavigate } from 'react-router'
 import BackHomeArrow from '../../../components/BackHomeArrow'
+import { toast } from 'react-toastify'
 
 function Home() {
   const {loading,generateReport,reports,getReports}=useInterview()
@@ -26,15 +27,29 @@ function Home() {
     }
 
     const handleGenerateReport=async()=>{
+        const loadingToastId = toast.loading('Generating your interview strategy...')
         try {
             const resumeFile=resumeInputref.current.files[0]
             const generatedReport=await generateReport({jobDescription,selfDescription,resumeFile})
+            toast.update(loadingToastId, {
+              render: 'Interview strategy generated successfully!',
+              type: 'success',
+              isLoading: false,
+              autoClose: 2500,
+              closeOnClick: true,
+            })
             if (generatedReport?._id) {
               navigate(`/interview/${generatedReport._id}`)
             }
         } catch (error) {
             const errorMsg = error?.message || "Failed to generate interview report"
-            alert(errorMsg)
+            toast.update(loadingToastId, {
+              render: errorMsg,
+              type: 'error',
+              isLoading: false,
+              autoClose: 3500,
+              closeOnClick: true,
+            })
             console.error("Report generation error:", error)
         }
     }
