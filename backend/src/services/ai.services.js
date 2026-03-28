@@ -293,16 +293,53 @@ async function generateResumePdf({resume,selfDescription,jobDescription}){
    
    `
 
-   const response=await ai.models.generateContent({
-    model:"gemini-3-flash-preview",
-    contents:prompt,
-    config:{
-        responseMimeType:"application/json",
-        responseSchema:zodToJsonSchema(resumepdfSchema)
-    }
-   })
-   const jsonContent= JSON.parse(response.text)
-    const pdfBuffer=await PdfFromHtml(jsonContent.html)
-   return pdfBuffer
+   try {
+       const response = await retryWithBackoff(async () => {
+           return await ai.models.generateContent({
+               model:"gemini-3-flash-preview",
+               contents:prompt,
+               config:{
+                   responseMimeType:"application/json",
+                   responseSchema:zodToJsonSchema(resumepdfSchema)
+               }
+           })
+       }, 3, 1000)
+       
+       const jsonContent= JSON.parse(response.text)
+       const pdfBuffer=await PdfFromHtml(jsonContent.html)
+       return pdfBuffer
+   } catch (error) {
+       console.error('Gemini Resume PDF Error:', error)
+       
+       // Handle specific Gemini API errors
+       if (error?.error?.code === 503 || error?.status === 'UNAVAILABLE') {
+           const message = 'Gemini API is currently overloaded. Please try again in a moment.'
+           console.error(message)
+           throw new Error(message)
+       }
+       
+       if (error?.error?.code === 429) {
+           const message = 'Gemini quota exceeded. Please try again later or upgrade your plan.'
+           console.warn(message)
+           throw new Error(message)
+       }
+       
+       if (error?.error?.code === 403 || error?.error?.code === 401) {
+           const message = 'Authentication error with Gemini API. Please contact support.'
+           console.error(message)
+           throw new Error(message)
+       }
+       
+       if (error?.error?.code === 400) {
+           const message = 'Invalid request to Gemini API. Please check your input and try again.'
+           console.error(message)
+           throw new Error(message)
+       }
+       
+       // Default error message
+       const message = error?.error?.message || error?.message || 'Failed to generate resume PDF. Please try again.'
+       console.error('Gemini Error:', message)
+       throw new Error(message)
+   }
 }
 module.exports={generateInterviewReport,generateResumePdf}

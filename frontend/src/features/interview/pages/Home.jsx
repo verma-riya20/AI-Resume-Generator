@@ -26,10 +26,16 @@ function Home() {
     }
 
     const handleGenerateReport=async()=>{
-        const resumeFile=resumeInputref.current.files[0]
-        const generatedReport=await generateReport({jobDescription,selfDescription,resumeFile})
-        if (generatedReport?._id) {
-          navigate(`/interview/${generatedReport._id}`)
+        try {
+            const resumeFile=resumeInputref.current.files[0]
+            const generatedReport=await generateReport({jobDescription,selfDescription,resumeFile})
+            if (generatedReport?._id) {
+              navigate(`/interview/${generatedReport._id}`)
+            }
+        } catch (error) {
+            const errorMsg = error?.message || "Failed to generate interview report"
+            alert(errorMsg)
+            console.error("Report generation error:", error)
         }
     }
 

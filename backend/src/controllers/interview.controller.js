@@ -23,51 +23,67 @@ function deriveTitle(jobDescription = '') {
 }
 
 async function generateInterviewReportController(req,res){
-   const resumeFile=req.file
-   const {selfDescription,jobDescription}=req.body
+   try {
+       const resumeFile=req.file
+       const {selfDescription,jobDescription}=req.body
 
-   if (!jobDescription || !jobDescription.trim()) {
-      return res.status(400).json({ message: "Job description is required" })
+       if (!jobDescription || !jobDescription.trim()) {
+          return res.status(400).json({ message: "Job description is required" })
+       }
+
+       if (!resumeFile && (!selfDescription || !selfDescription.trim())) {
+          return res.status(400).json({ message: "Either resume file or self description is required" })
+       }
+
+       let resumeText = ''
+       if (resumeFile) {
+          const resumeContent=await (new pdfParse.PDFParse(Uint8Array.from(resumeFile.buffer))).getText()
+          resumeText = resumeContent?.text || ''
+       }
+
+       const interviewReportByAi=await generateInterviewReport({
+        resume:resumeText,
+        selfDescription:(selfDescription || '').trim(),
+        jobDescription:jobDescription.trim()
+       })
+
+       if (!interviewReportByAi || typeof interviewReportByAi.matchScore !== "number") {
+        return res.status(502).json({ message: "AI returned incomplete report. Please retry." })
+       }
+
+       const safeTitle =
+          typeof interviewReportByAi.title === 'string' && interviewReportByAi.title.trim()
+             ? interviewReportByAi.title.trim()
+             : deriveTitle(jobDescription)
+
+       const interviewReport=await interviewReportModel.create({
+        user:req.user.id,
+          resume:resumeText,
+          selfDescription:(selfDescription || '').trim(),
+          jobDescription:jobDescription.trim(),
+        ...interviewReportByAi,
+        title: safeTitle
+       })
+
+       res.status(201).json({
+        message:"Interview Report Generated Successfully",
+        interviewReport
+       })
+   } catch (error) {
+       console.error('Interview Generation Error:', error)
+       
+       // Check if error is from Gemini API
+       if (error?.message?.includes('Gemini') || error?.message?.includes('overloaded') || error?.message?.includes('quota')) {
+           return res.status(503).json({ 
+               message: error.message 
+           })
+       }
+       
+       // Default error response
+       res.status(500).json({ 
+           message: error?.message || "Failed to generate interview report. Please try again." 
+       })
    }
-
-   if (!resumeFile && (!selfDescription || !selfDescription.trim())) {
-      return res.status(400).json({ message: "Either resume file or self description is required" })
-   }
-
-   let resumeText = ''
-   if (resumeFile) {
-      const resumeContent=await (new pdfParse.PDFParse(Uint8Array.from(resumeFile.buffer))).getText()
-      resumeText = resumeContent?.text || ''
-   }
-
-   const interviewReportByAi=await generateInterviewReport({
-    resume:resumeText,
-    selfDescription:(selfDescription || '').trim(),
-    jobDescription:jobDescription.trim()
-   })
-
-   if (!interviewReportByAi || typeof interviewReportByAi.matchScore !== "number") {
-    return res.status(502).json({ message: "AI returned incomplete report. Please retry." })
-   }
-
-   const safeTitle =
-      typeof interviewReportByAi.title === 'string' && interviewReportByAi.title.trim()
-         ? interviewReportByAi.title.trim()
-         : deriveTitle(jobDescription)
-
-   const interviewReport=await interviewReportModel.create({
-    user:req.user.id,
-      resume:resumeText,
-      selfDescription:(selfDescription || '').trim(),
-      jobDescription:jobDescription.trim(),
-    ...interviewReportByAi,
-    title: safeTitle
-   })
-
-   res.status(201).json({
-    message:"Interview Report Generated Successfully",
-    interviewReport
-   })
 }
 
 async function getInterviewReportByIdController(req,res) {
