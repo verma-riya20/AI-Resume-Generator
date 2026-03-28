@@ -10,10 +10,16 @@ export const AuthProvider=({children})=>{
     useEffect(()=>{
          const getAndsetUser=async()=>{
          try {
+            // Restore token from localStorage if it exists
+            const token = localStorage.getItem('authToken')
+            if(token){
+              // Token will be automatically sent via interceptor
+            }
             const data=await getMe()
             setuser(data?.user ?? null)
          } catch (error) {
             setuser(null)
+            localStorage.removeItem('authToken')
          } finally {
             setloading(false)
          }
