@@ -5,9 +5,11 @@ import { useInterview } from '../hooks/useInterview'
 import { useNavigate } from 'react-router'
 import BackHomeArrow from '../../../components/BackHomeArrow'
 import { toast } from 'react-toastify'
+import { useAuth } from '../../auth/hooks/useAuth'
 
 function Home() {
   const {loading,generateReport,reports,getReports}=useInterview()
+    const { handleLogout } = useAuth()
     const [jobDescription,setJobDescription]=useState("")
     const [selfDescription,setSelfDescription]=useState("")
     const [uploadedFile, setUploadedFile] = useState(null)
@@ -76,9 +78,22 @@ function Home() {
         }
     }
 
+    const handleLogoutClick = async () => {
+      try {
+        await handleLogout()
+      } finally {
+        navigate('/login')
+      }
+    }
+
     return (
          <main className="home">
       <BackHomeArrow />
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
+        <button type="button" className="button" onClick={handleLogoutClick}>
+          Logout
+        </button>
+      </div>
       <section className="plan-card" aria-label="Create interview plan">
         <header className="plan-header">
           <h1>
