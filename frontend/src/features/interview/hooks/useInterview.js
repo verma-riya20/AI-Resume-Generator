@@ -46,6 +46,8 @@ export const useInterview=()=>{
         setreports(response.interviewReports)
     } catch (error) {
         console.log("error",error)
+        setreports([])
+        setReport(null)
     }finally{
         setLoading(false)
     }
