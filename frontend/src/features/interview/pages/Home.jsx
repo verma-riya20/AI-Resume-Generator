@@ -89,8 +89,20 @@ function Home() {
     return (
          <main className="home">
       <BackHomeArrow />
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
-        <button type="button" className="button" onClick={handleLogoutClick}>
+      <div style={{ position: 'fixed', top: '16px', right: '16px', zIndex: 1000 }}>
+        <button
+          type="button"
+          onClick={handleLogoutClick}
+          style={{
+            padding: '8px 14px',
+            borderRadius: '8px',
+            border: '1px solid #111827',
+            background: '#111827',
+            color: '#ffffff',
+            cursor: 'pointer',
+            fontWeight: 600
+          }}
+        >
           Logout
         </button>
       </div>
