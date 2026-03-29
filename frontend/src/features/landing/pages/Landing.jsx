@@ -158,14 +158,14 @@ function Landing() {
       </section>
 
       <footer className="landing-footer">
-        <div className="footer-brand">Cognitive Edge AI</div>
+        <div className="footer-brand">AceMatch AI</div>
         <div className="footer-links">
           <span>Analytics</span>
           <span>Resume</span>
           <span>Gap</span>
           <span>Privacy</span>
         </div>
-        <p>© 2024 Cogitive Edge AI. High-Stakes Career</p>
+        <p>© 2024 AceMatch AI. High-Stakes Career</p>
       </footer>
     </main>
   )
