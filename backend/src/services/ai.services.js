@@ -2,6 +2,9 @@ const {GoogleGenAI}=require('@google/genai')
 const { z } =require('zod')
 const {zodToJsonSchema}=require('zod-to-json-schema')
 const puppeteer=require('puppeteer')
+const { execSync } = require('child_process')
+const path = require('path')
+const fs = require('fs')
 
 const ai=new GoogleGenAI({
     apiKey:process.env.GOOGLE_GENAI_KEY
@@ -301,6 +304,10 @@ Candidate details:
 async function PdfFromHtml(htmlContent){
     let browser
     try {
+        const cacheDir = process.env.PUPPETEER_CACHE_DIR || path.join(process.cwd(), '.cache', 'puppeteer')
+        process.env.PUPPETEER_CACHE_DIR = cacheDir
+        fs.mkdirSync(cacheDir, { recursive: true })
+
         const launchOptions = {
             headless: true,
             args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
@@ -308,9 +315,31 @@ async function PdfFromHtml(htmlContent){
 
         if (process.env.PUPPETEER_EXECUTABLE_PATH) {
             launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH
+        } else {
+            try {
+                launchOptions.executablePath = puppeteer.executablePath()
+            } catch (_error) {
+                // We'll attempt install below if executable is not present.
+            }
         }
 
-        browser = await puppeteer.launch(launchOptions)
+        try {
+            browser = await puppeteer.launch(launchOptions)
+        } catch (launchError) {
+            const launchMessage = launchError?.message || ''
+            if (!launchMessage.includes('Could not find Chrome')) {
+                throw launchError
+            }
+
+            // Self-heal on platforms where browser cache is not preserved between build/runtime.
+            execSync(`npx puppeteer browsers install chrome --path "${cacheDir}"`, {
+                stdio: 'inherit',
+                env: process.env
+            })
+            launchOptions.executablePath = puppeteer.executablePath()
+            browser = await puppeteer.launch(launchOptions)
+        }
+
         const page = await browser.newPage()
         await page.setContent(htmlContent,{waitUntil:"networkidle0"})
         const pdfBuffer = await page.pdf({format:"A4",margin:{
