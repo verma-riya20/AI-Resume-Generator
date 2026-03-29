@@ -138,13 +138,18 @@
     gap: 0.35rem;
     z-index: 4;
 
-    a {
+    a,
+    button {
       text-decoration: none;
       color: var(--text);
       font-weight: 700;
       font-size: 0.82rem;
       padding: 0.5rem 0.7rem;
       border-radius: 0.45rem;
+      border: 0;
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
     }
 
     .nav-cta {

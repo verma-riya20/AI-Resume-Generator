@@ -1,9 +1,17 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router'
 import '../styles/landing.scss'
+import { useAuth } from '../../auth/hooks/useAuth'
 
 function Landing() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const { user, handleLogout } = useAuth()
+  const isAuthenticated = Boolean(user || localStorage.getItem('authToken'))
+
+  const onLogout = async () => {
+    await handleLogout()
+    setMenuOpen(false)
+  }
 
   return (
     <main className="landing-page">
@@ -26,8 +34,17 @@ function Landing() {
         </button>
 
         <nav className={menuOpen ? 'nav-links open' : 'nav-links'}>
-          <Link to="/login" onClick={() => setMenuOpen(false)}>Login</Link>
-          <Link to="/register" className="nav-cta" onClick={() => setMenuOpen(false)}>Get Started</Link>
+          {isAuthenticated ? (
+            <>
+              <Link to="/dashboard" onClick={() => setMenuOpen(false)}>Dashboard</Link>
+              <button type="button" className="nav-cta" onClick={onLogout}>Logout</button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" onClick={() => setMenuOpen(false)}>Login</Link>
+              <Link to="/register" className="nav-cta" onClick={() => setMenuOpen(false)}>Get Started</Link>
+            </>
+          )}
         </nav>
       </header>
 
