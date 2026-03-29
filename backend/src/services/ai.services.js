@@ -321,12 +321,6 @@ async function PdfFromHtml(htmlContent){
                 // Ignore stale/broken configured paths and fall back to Puppeteer's discovered executable.
                 delete process.env.PUPPETEER_EXECUTABLE_PATH
             }
-        } else {
-            try {
-                launchOptions.executablePath = puppeteer.executablePath()
-            } catch (_error) {
-                // We'll attempt install below if executable is not present.
-            }
         }
 
         try {
@@ -346,7 +340,30 @@ async function PdfFromHtml(htmlContent){
                 stdio: 'inherit',
                 env: process.env
             })
-            launchOptions.executablePath = puppeteer.executablePath()
+
+            let resolvedPath = ''
+            try {
+                resolvedPath = puppeteer.executablePath()
+            } catch (_error) {
+                resolvedPath = ''
+            }
+
+            if (resolvedPath && fs.existsSync(resolvedPath)) {
+                launchOptions.executablePath = resolvedPath
+            } else {
+                // One more install attempt without explicit path for hosts that use default cache.
+                execSync('npx puppeteer browsers install chrome', {
+                    stdio: 'inherit',
+                    env: process.env
+                })
+                resolvedPath = puppeteer.executablePath()
+                if (resolvedPath && fs.existsSync(resolvedPath)) {
+                    launchOptions.executablePath = resolvedPath
+                } else {
+                    throw new Error('Chrome install completed but executable path is still missing at runtime.')
+                }
+            }
+
             browser = await puppeteer.launch(launchOptions)
         }
 
