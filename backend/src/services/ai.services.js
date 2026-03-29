@@ -314,7 +314,13 @@ async function PdfFromHtml(htmlContent){
         }
 
         if (process.env.PUPPETEER_EXECUTABLE_PATH) {
-            launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH
+            const configuredPath = process.env.PUPPETEER_EXECUTABLE_PATH
+            if (fs.existsSync(configuredPath)) {
+                launchOptions.executablePath = configuredPath
+            } else {
+                // Ignore stale/broken configured paths and fall back to Puppeteer's discovered executable.
+                delete process.env.PUPPETEER_EXECUTABLE_PATH
+            }
         } else {
             try {
                 launchOptions.executablePath = puppeteer.executablePath()
@@ -327,7 +333,11 @@ async function PdfFromHtml(htmlContent){
             browser = await puppeteer.launch(launchOptions)
         } catch (launchError) {
             const launchMessage = launchError?.message || ''
-            if (!launchMessage.includes('Could not find Chrome')) {
+            const missingBrowser =
+                launchMessage.includes('Could not find Chrome') ||
+                launchMessage.includes('Browser was not found at the configured executablePath')
+
+            if (!missingBrowser) {
                 throw launchError
             }
 
