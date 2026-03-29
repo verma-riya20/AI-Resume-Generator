@@ -25,7 +25,12 @@ async function authUser(req,res,next){
 
     try {
          const decoded=jwt.verify(token,process.env.JWT_SECRET)
-         req.user=decoded
+            const userId = decoded?._id || decoded?.id
+            req.user = {
+              ...decoded,
+              _id: userId,
+              id: userId
+            }
          next()
     } catch (error) {
         return res.status(401).json({message:"Invalid token"})
