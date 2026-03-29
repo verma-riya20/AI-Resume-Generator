@@ -63,8 +63,17 @@ function deriveTitle(jobDescription = '') {
       : firstMeaningfulLine
 }
 
+function getRequestUserId(req) {
+   return req?.user?._id || req?.user?.id || null
+}
+
 async function generateInterviewReportController(req,res){
    try {
+       const userId = getRequestUserId(req)
+       if (!userId) {
+          return res.status(401).json({ message: "Unauthorized user context" })
+       }
+
        const resumeFile=req.file
        const {selfDescription,jobDescription}=req.body
    let resumeParsingFailed = false
@@ -105,7 +114,7 @@ async function generateInterviewReportController(req,res){
              : deriveTitle(jobDescription)
 
        const interviewReport=await interviewReportModel.create({
-        user:req.user.id,
+            user:userId,
           resume:resumeText,
           selfDescription:(selfDescription || '').trim(),
           jobDescription:jobDescription.trim(),
@@ -141,8 +150,13 @@ async function generateInterviewReportController(req,res){
 }
 
 async function getInterviewReportByIdController(req,res) {
+   const userId = getRequestUserId(req)
+   if (!userId) {
+      return res.status(401).json({ message: "Unauthorized user context" })
+   }
+
    const {interviewId}=req.params
-   const interviewReport=await interviewReportModel.findOne({_id:interviewId,user:req.user.id})
+   const interviewReport=await interviewReportModel.findOne({_id:interviewId,user:userId})
    if(!interviewReport){
       return res.status(404).json({
          message:"Interview report not found."
@@ -155,8 +169,13 @@ async function getInterviewReportByIdController(req,res) {
 }
 
 async function getAllInterviewReportController(req,res){
+      const userId = getRequestUserId(req)
+      if (!userId) {
+         return res.status(401).json({ message: "Unauthorized user context" })
+      }
+
       const interviewReportsRaw = await interviewReportModel
-         .find({ user: req.user.id })
+         .find({ user: userId })
          .sort({ createdAt: -1 })
          .select("title jobDescription matchScore createdAt")
 
@@ -183,10 +202,15 @@ async function getAllInterviewReportController(req,res){
 
    async function generateResumePdfController(req,res){
       try {
+          const userId = getRequestUserId(req)
+          if (!userId) {
+             return res.status(401).json({ message: "Unauthorized user context" })
+          }
+
           const {interviewReportId}=req.params
           const interviewReport=await interviewReportModel.findOne({
              _id:interviewReportId,
-             user:req.user.id
+             user:userId
           })
           if(!interviewReport){
             return res.status(404).json({
