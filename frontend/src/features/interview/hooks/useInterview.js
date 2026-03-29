@@ -66,7 +66,21 @@ export const useInterview=()=>{
         document.body.removeChild(link)
         window.URL.revokeObjectURL(url)
     }catch(err){
-        const errorMsg = err?.response?.data?.message || err?.message || "Failed to download resume PDF"
+        let errorMsg = err?.message || "Failed to download resume PDF"
+        const blobData = err?.response?.data
+        if (blobData instanceof Blob) {
+            try {
+                const text = await blobData.text()
+                const parsed = JSON.parse(text)
+                if (parsed?.message) {
+                    errorMsg = parsed.message
+                }
+            } catch (_parseError) {
+                // Keep fallback error message.
+            }
+        } else if (blobData?.message) {
+            errorMsg = blobData.message
+        }
         console.error("Error downloading resume PDF:", errorMsg)
         throw new Error(errorMsg)
     }finally{
