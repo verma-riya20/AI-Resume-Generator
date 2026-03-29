@@ -182,8 +182,12 @@ async function getAllInterviewReportController(req,res){
    /**for resume pdf generation */
 
    async function generateResumePdfController(req,res){
+      try {
           const {interviewReportId}=req.params
-          const interviewReport=await interviewReportModel.findById(interviewReportId)
+          const interviewReport=await interviewReportModel.findOne({
+             _id:interviewReportId,
+             user:req.user.id
+          })
           if(!interviewReport){
             return res.status(404).json({
                message:"Interview report not found."
@@ -197,6 +201,24 @@ async function getAllInterviewReportController(req,res){
             "Content-Disposition":`attachment; filename=resume_${interviewReportId}.pdf`
           })
           res.send(pdfBuffer)
+         } catch (error) {
+               console.error('Resume PDF Generation Error:', error)
+
+               if (error?.isGeminiError) {
+                  const statusCode = Number(error?.statusCode) || 503
+                  return res.status(statusCode).json({
+                     message: error.message
+                  })
+               }
+
+               if (error?.statusCode && Number.isFinite(Number(error.statusCode))) {
+                  return res.status(Number(error.statusCode)).json({ message: error.message })
+               }
+
+               return res.status(500).json({
+                  message: error?.message || 'Failed to generate resume PDF. Please try again.'
+               })
+         }
    }
 
 module.exports={generateInterviewReportController,getInterviewReportByIdController,getAllInterviewReportController,generateResumePdfController}

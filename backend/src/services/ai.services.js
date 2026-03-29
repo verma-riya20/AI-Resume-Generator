@@ -299,18 +299,36 @@ Candidate details:
     }
 }
 async function PdfFromHtml(htmlContent){
-    const browser=await puppeteer.launch()
-    const page=await browser.newPage()
-    await page.setContent(htmlContent,{waitUntil:"networkidle0"})
-    const pdfBuffer=await page.pdf({format:"A4",margin:{
-        top:'20mm',
-        bottom:'20mm',
-        left:'15mm',
-        right:'15mm'
-    }})
-    await browser.close()
-    return pdfBuffer
+    let browser
+    try {
+        const launchOptions = {
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+        }
 
+        if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+            launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH
+        }
+
+        browser = await puppeteer.launch(launchOptions)
+        const page = await browser.newPage()
+        await page.setContent(htmlContent,{waitUntil:"networkidle0"})
+        const pdfBuffer = await page.pdf({format:"A4",margin:{
+            top:'20mm',
+            bottom:'20mm',
+            left:'15mm',
+            right:'15mm'
+        }})
+        return pdfBuffer
+    } catch (error) {
+        const pdfError = new Error(`Unable to render PDF: ${error?.message || 'Unknown rendering error'}`)
+        pdfError.statusCode = 500
+        throw pdfError
+    } finally {
+        if (browser) {
+            await browser.close()
+        }
+    }
 }
 
 async function generateResumePdf({resume,selfDescription,jobDescription}){
@@ -330,8 +348,9 @@ async function generateResumePdf({resume,selfDescription,jobDescription}){
    
    `
 
+   let response
    try {
-       const response = await retryWithBackoff(async () => {
+       response = await retryWithBackoff(async () => {
            return await ai.models.generateContent({
                model:"gemini-3-flash-preview",
                contents:prompt,
@@ -341,12 +360,17 @@ async function generateResumePdf({resume,selfDescription,jobDescription}){
                }
            })
        }, 3, 1000)
-       
-       const jsonContent= JSON.parse(response.text)
-       const pdfBuffer=await PdfFromHtml(jsonContent.html)
-       return pdfBuffer
    } catch (error) {
        throw buildGeminiError(error, 'Failed to generate resume PDF. Please try again.')
    }
+
+   const jsonContent = JSON.parse(response.text)
+   if (!jsonContent?.html || typeof jsonContent.html !== 'string') {
+       const invalidResponseError = new Error('AI returned invalid HTML for resume PDF generation.')
+       invalidResponseError.statusCode = 502
+       throw invalidResponseError
+   }
+
+   return PdfFromHtml(jsonContent.html)
 }
 module.exports={generateInterviewReport,generateResumePdf}
