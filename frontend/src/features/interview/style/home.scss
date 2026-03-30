@@ -12,11 +12,13 @@
     --line-soft: #1c2940;
     --accent: #ff0f73;
     --accent-soft: #fd4f9b;
+    --toolbar-offset: 3.1rem;
 
     position: relative;
     width: 100%;
     height: auto;
     padding: clamp(1rem, 2vw, 2rem);
+    padding-top: calc(clamp(1rem, 2vw, 2rem) + var(--toolbar-offset));
     box-sizing: border-box;
     display: flex;
     justify-content: center;
@@ -470,7 +472,9 @@
 
 @media (max-width: 920px) {
     .home {
+        --toolbar-offset: 2.7rem;
         padding: 0.85rem;
+        padding-top: calc(0.85rem + var(--toolbar-offset));
 
         .logout-button {
             padding: 0.46rem 0.78rem;
@@ -539,7 +543,9 @@
 
 @media (max-width: 640px) {
     .home {
+        --toolbar-offset: 2.45rem;
         padding: 0.45rem;
+        padding-top: calc(0.45rem + var(--toolbar-offset));
 
         .logout-fab {
             top: 0.55rem;
@@ -592,7 +598,9 @@
 
 @media (max-width: 420px) {
     .home {
+        --toolbar-offset: 2.35rem;
         padding: 0.35rem;
+        padding-top: calc(0.35rem + var(--toolbar-offset));
 
         .plan-header {
             padding: 1rem 0.72rem 0.8rem;
