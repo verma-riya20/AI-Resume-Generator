@@ -8,6 +8,13 @@ export const AuthProvider=({children})=>{
      const [loading, setloading] = useState(true)
   
     useEffect(()=>{
+         let isMounted = true
+         const safetyTimer = setTimeout(() => {
+            if (isMounted) {
+               setloading(false)
+            }
+         }, 13000)
+
          const getAndsetUser=async()=>{
          try {
             // Restore token from localStorage if it exists
@@ -21,15 +28,27 @@ export const AuthProvider=({children})=>{
                         setTimeout(() => reject(new Error('Auth check timed out. Please try again.')), 12000)
                      )
                   ])
-            setuser(data?.user ?? null)
+            if (isMounted) {
+               setuser(data?.user ?? null)
+            }
          } catch (error) {
-            setuser(null)
+            if (isMounted) {
+               setuser(null)
+            }
             localStorage.removeItem('authToken')
          } finally {
-            setloading(false)
+            clearTimeout(safetyTimer)
+            if (isMounted) {
+               setloading(false)
+            }
          }
          }
          getAndsetUser()
+
+         return () => {
+            isMounted = false
+            clearTimeout(safetyTimer)
+         }
     },[])
 
 
