@@ -14,6 +14,7 @@ const getTokenFromCookies = () => {
 
 const api=axios.create({
   baseURL: API_BASE_URL,
+    timeout: 12000,
     withCredentials:true      //written to enable server to get the cookies
 })
 
@@ -42,7 +43,8 @@ export async function register({username,email,password}){
    }
    return response.data
   } catch (error) {
-    console.log(error)
+    const message = error?.response?.data?.message || "Registration failed"
+    throw new Error(message)
   }
 }
 export async function login({email,password}){
@@ -72,7 +74,8 @@ export async function logout(){
      localStorage.removeItem('authToken')
    return response.data
   } catch (error) {
-    console.log(error)
+    const message = error?.response?.data?.message || "Logout failed"
+    throw new Error(message)
   }
 }
 
@@ -81,6 +84,7 @@ export async function getMe(){
      const response=await api.get('/api/auth/get-me')
    return response.data
   } catch (error) {
-    console.log(error)
+    const message = error?.response?.data?.message || "Unable to validate session"
+    throw new Error(message)
   }
 }

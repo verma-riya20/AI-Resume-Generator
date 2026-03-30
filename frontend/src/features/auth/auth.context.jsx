@@ -15,7 +15,12 @@ export const AuthProvider=({children})=>{
             if(token){
               // Token will be automatically sent via interceptor
             }
-            const data=await getMe()
+                  const data=await Promise.race([
+                     getMe(),
+                     new Promise((_, reject) =>
+                        setTimeout(() => reject(new Error('Auth check timed out. Please try again.')), 12000)
+                     )
+                  ])
             setuser(data?.user ?? null)
          } catch (error) {
             setuser(null)
