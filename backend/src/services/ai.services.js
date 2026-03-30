@@ -5,6 +5,7 @@ const puppeteer=require('puppeteer')
 const { execSync } = require('child_process')
 const path = require('path')
 const fs = require('fs')
+const os = require('os')
 
 const ai=new GoogleGenAI({
     apiKey:process.env.GOOGLE_GENAI_KEY
@@ -302,6 +303,61 @@ Candidate details:
     }
 }
 async function PdfFromHtml(htmlContent){
+
+    function collectExecutableCandidates(rootDir) {
+        if (!rootDir || !fs.existsSync(rootDir)) return []
+
+        const candidates = []
+        const executableNames = process.platform === 'win32'
+            ? ['chrome.exe']
+            : process.platform === 'darwin'
+                ? ['Google Chrome for Testing', 'Chromium']
+                : ['chrome', 'chromium']
+
+        const stack = [rootDir]
+        while (stack.length) {
+            const currentDir = stack.pop()
+            let entries = []
+            try {
+                entries = fs.readdirSync(currentDir, { withFileTypes: true })
+            } catch (_error) {
+                continue
+            }
+
+            for (const entry of entries) {
+                const fullPath = path.join(currentDir, entry.name)
+                if (entry.isDirectory()) {
+                    stack.push(fullPath)
+                    continue
+                }
+
+                const fileName = entry.name
+                if (executableNames.includes(fileName)) {
+                    candidates.push(fullPath)
+                }
+            }
+        }
+
+        return candidates
+    }
+
+    function resolveInstalledChromePath(cacheDir) {
+        const searchRoots = [
+            cacheDir,
+            process.env.PUPPETEER_CACHE_DIR,
+            path.join(os.homedir(), '.cache', 'puppeteer')
+        ].filter(Boolean)
+
+        for (const root of searchRoots) {
+            const candidates = collectExecutableCandidates(root)
+            if (candidates.length) {
+                return candidates[0]
+            }
+        }
+
+        return ''
+    }
+
     let browser
     try {
         const cacheDir = process.env.PUPPETEER_CACHE_DIR || path.join(process.cwd(), '.cache', 'puppeteer')
@@ -348,6 +404,10 @@ async function PdfFromHtml(htmlContent){
                 resolvedPath = ''
             }
 
+            if (!resolvedPath || !fs.existsSync(resolvedPath)) {
+                resolvedPath = resolveInstalledChromePath(cacheDir)
+            }
+
             if (resolvedPath && fs.existsSync(resolvedPath)) {
                 launchOptions.executablePath = resolvedPath
             } else {
@@ -356,7 +416,17 @@ async function PdfFromHtml(htmlContent){
                     stdio: 'inherit',
                     env: process.env
                 })
-                resolvedPath = puppeteer.executablePath()
+                resolvedPath = ''
+                try {
+                    resolvedPath = puppeteer.executablePath()
+                } catch (_error) {
+                    resolvedPath = ''
+                }
+
+                if (!resolvedPath || !fs.existsSync(resolvedPath)) {
+                    resolvedPath = resolveInstalledChromePath(cacheDir)
+                }
+
                 if (resolvedPath && fs.existsSync(resolvedPath)) {
                     launchOptions.executablePath = resolvedPath
                 } else {

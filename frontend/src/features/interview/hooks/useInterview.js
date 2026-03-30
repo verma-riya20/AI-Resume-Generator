@@ -1,6 +1,7 @@
 import { getAllInterviewReports,generateInterviewReport,getInterviewReportById ,generateResumePdf} from "../services/interview.api";
 import { useContext } from "react";
 import { InterviewContext } from "../interview.context";
+import { toast } from "react-toastify";
 
 export const useInterview=()=>{
     const context=useContext(InterviewContext)
@@ -57,6 +58,7 @@ export const useInterview=()=>{
    //generate pdf
    const getResumePdf=async(interviewReportId)=>{
     setLoading(true)
+    const toastId = toast.loading("Generating your resume PDF... please wait")
     try{
         const response=await generateResumePdf({interviewReportId})
         const url=window.URL.createObjectURL(new Blob([response],{type:"application/pdf"}))
@@ -67,6 +69,13 @@ export const useInterview=()=>{
         link.click()
         document.body.removeChild(link)
         window.URL.revokeObjectURL(url)
+        toast.update(toastId,{
+            render:"Resume downloaded successfully",
+            type:"success",
+            isLoading:false,
+            autoClose:2500,
+            closeOnClick:true
+        })
     }catch(err){
         let errorMsg = err?.message || "Failed to download resume PDF"
         const blobData = err?.response?.data
@@ -84,6 +93,13 @@ export const useInterview=()=>{
             errorMsg = blobData.message
         }
         console.error("Error downloading resume PDF:", errorMsg)
+        toast.update(toastId,{
+            render:errorMsg,
+            type:"error",
+            isLoading:false,
+            autoClose:4000,
+            closeOnClick:true
+        })
         throw new Error(errorMsg)
     }finally{
         setLoading(false)

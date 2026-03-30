@@ -3,7 +3,6 @@ import '../style/interview.scss'
 import { useInterview } from '../hooks/useInterview'
 import { useParams } from 'react-router'
 import BackHomeArrow from '../../../components/BackHomeArrow'
-import { toast } from 'react-toastify'
 
 const DEFAULT_ANSWER = 'Explain your approach clearly with a concrete example.'
 
@@ -114,9 +113,7 @@ function Interview() {
   const handleResumeDownload = async () => {
     try {
       await getResumePdf(interviewId)
-    } catch (error) {
-      toast.error(error?.message || 'Failed to download resume PDF')
-    }
+    } catch (_error) {}
   }
 
   useEffect(() => {
