@@ -181,6 +181,8 @@
 
     .field-group {
         margin-top: 0.8rem;
+        width: 100%;
+        min-width: 0;
     }
 
     .field-label {
@@ -201,6 +203,7 @@
     .dropzone {
         margin-top: 0.55rem;
         width: 100%;
+        max-width: none;
         border: 1px dashed #354c73;
         border-radius: 0.72rem;
         min-height: 145px;
@@ -428,6 +431,21 @@
         justify-content: center;
         gap: 0.25rem;
         width: 100%;
+    }
+
+    .right-panel {
+        align-items: stretch;
+    }
+
+    .right-panel .field-group,
+    .right-panel .field-group .dropzone,
+    .right-panel .field-group textarea,
+    .right-panel #selfDescription {
+        display: block;
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
     }
 }
 
