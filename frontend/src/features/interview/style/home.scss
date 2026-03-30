@@ -29,6 +29,25 @@
     color: var(--text);
     font-family: 'Manrope', sans-serif;
 
+    .logout-fab {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 1000;
+    }
+
+    .logout-button {
+        padding: 0.5rem 0.9rem;
+        border-radius: 0.5rem;
+        border: 1px solid #111827;
+        background: #111827;
+        color: #ffffff;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 0.85rem;
+        line-height: 1;
+    }
+
     .plan-card {
         width: min(1100px, 100%);
         max-height: none;
@@ -201,6 +220,8 @@
         strong {
             font-size: 0.82rem;
             color: #d7e6ff;
+            text-align: center;
+            padding: 0 0.45rem;
         }
 
         small {
@@ -245,6 +266,8 @@
 
     .cta-button {
         margin-top: auto;
+        width: 100%;
+        padding: 0.75rem 0.9rem;
         border: 0;
         border-radius: 0.7rem;
         background: linear-gradient(95deg, var(--accent), #ff3f8b);
@@ -252,6 +275,8 @@
         font: 800 0.88rem/1 'Space Grotesk', sans-serif;
         letter-spacing: 0.01em;
         min-height: 46px;
+        line-height: 1.2;
+        text-align: center;
         cursor: pointer;
         box-shadow: 0 14px 25px rgba(255, 15, 115, 0.28);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -290,6 +315,11 @@
             background: rgba(14, 24, 41, 0.75);
             cursor: pointer;
             flex-shrink: 0;
+
+            h3 {
+                margin: 0;
+                overflow-wrap: anywhere;
+            }
         }
 
         .report-meta {
@@ -402,6 +432,30 @@
 
 @media (max-width: 920px) {
     .home {
+        padding: 0.85rem;
+
+        .logout-fab {
+            position: sticky;
+            top: 0.5rem;
+            right: auto;
+            margin-left: auto;
+            width: fit-content;
+            z-index: 6;
+        }
+
+        .logout-button {
+            padding: 0.46rem 0.78rem;
+            font-size: 0.8rem;
+        }
+
+        .plan-header {
+            padding: 1.2rem 0.85rem 1rem;
+
+            p {
+                max-width: 100%;
+            }
+        }
+
         .plan-grid {
             grid-template-columns: 1fr;
         }
@@ -413,6 +467,110 @@
 
         #jobDescription {
             min-height: 260px;
+        }
+
+        .panel {
+            padding: 0.95rem;
+        }
+
+        .recent-reports {
+            padding: 0.8rem;
+
+            .reports-list {
+                gap: 0.6rem;
+            }
+
+            .report-item {
+                min-width: 100%;
+                flex: 1 1 100%;
+            }
+        }
+    }
+}
+
+@media (max-width: 640px) {
+    .home {
+        padding: 0.6rem;
+
+        .plan-card {
+            border-radius: 0.8rem;
+        }
+
+        .plan-header h1 {
+            font-size: clamp(1.25rem, 7vw, 1.65rem);
+        }
+
+        .panel-title {
+            align-items: flex-start;
+            row-gap: 0.35rem;
+            flex-wrap: wrap;
+        }
+
+        #jobDescription {
+            min-height: 200px;
+        }
+
+        #selfDescription {
+            min-height: 110px;
+        }
+
+        .dropzone {
+            min-height: 128px;
+        }
+
+        .helper-note {
+            font-size: 0.72rem;
+        }
+
+        .cta-button {
+            font-size: 0.8rem;
+            min-height: 44px;
+            letter-spacing: 0;
+        }
+    }
+}
+
+@media (max-width: 420px) {
+    .home {
+        .plan-header {
+            padding: 1rem 0.72rem 0.8rem;
+        }
+
+        .panel {
+            padding: 0.8rem 0.72rem;
+        }
+
+        .field-label {
+            font-size: 0.8rem;
+        }
+
+        .dropzone {
+            min-height: 116px;
+
+            strong {
+                font-size: 0.76rem;
+            }
+
+            small {
+                font-size: 0.66rem;
+            }
+        }
+
+        .meta {
+            font-size: 0.68rem;
+        }
+
+        .recent-reports {
+            padding: 0.72rem;
+
+            h2 {
+                margin: 0;
+                font-size: 1.15rem;
+            }
+
+            .report-item {
+                padding: 0.82rem;
+            }
         }
     }
 }
