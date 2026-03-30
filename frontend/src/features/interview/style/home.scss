@@ -465,6 +465,26 @@
             padding: 0.95rem;
         }
 
+        .right-panel {
+            align-items: stretch;
+
+            .field-group,
+            .divider,
+            .helper-note,
+            .cta-button {
+                align-self: stretch;
+                width: 100%;
+                max-width: 100%;
+            }
+
+            #selfDescription,
+            .dropzone {
+                width: 100%;
+                min-width: 100%;
+                max-width: 100%;
+            }
+        }
+
         .recent-reports {
             padding: 0.8rem;
 
@@ -517,6 +537,8 @@
 
         .field-group {
             width: 100%;
+            max-width: 100%;
+            min-width: 100%;
         }
 
         .helper-note {
