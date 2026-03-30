@@ -200,6 +200,7 @@
 
     .dropzone {
         margin-top: 0.55rem;
+        width: 100%;
         border: 1px dashed #354c73;
         border-radius: 0.72rem;
         min-height: 145px;
@@ -434,15 +435,6 @@
     .home {
         padding: 0.85rem;
 
-        .logout-fab {
-            position: sticky;
-            top: 0.5rem;
-            right: auto;
-            margin-left: auto;
-            width: fit-content;
-            z-index: 6;
-        }
-
         .logout-button {
             padding: 0.46rem 0.78rem;
             font-size: 0.8rem;
@@ -490,7 +482,12 @@
 
 @media (max-width: 640px) {
     .home {
-        padding: 0.6rem;
+        padding: 0.45rem;
+
+        .logout-fab {
+            top: 0.55rem;
+            right: 0.55rem;
+        }
 
         .plan-card {
             border-radius: 0.8rem;
@@ -518,6 +515,10 @@
             min-height: 128px;
         }
 
+        .field-group {
+            width: 100%;
+        }
+
         .helper-note {
             font-size: 0.72rem;
         }
@@ -532,6 +533,8 @@
 
 @media (max-width: 420px) {
     .home {
+        padding: 0.35rem;
+
         .plan-header {
             padding: 1rem 0.72rem 0.8rem;
         }
