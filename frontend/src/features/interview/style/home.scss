@@ -102,6 +102,7 @@
         grid-template-columns: 1fr 1fr;
         gap: 0;
         min-height: 540px;
+        padding-bottom: 1.35rem;
     }
 
     .panel {
@@ -308,7 +309,7 @@
         display: flex;
         flex-direction: column;
         gap: 0.8rem;
-        margin-top: 1.35rem;
+        margin-top: 2rem;
         padding: 1.15rem 1rem 1rem;
         border-top: 1px solid rgba(40, 59, 94, 0.65);
         background:
@@ -551,7 +552,7 @@
 
         .recent-reports {
             padding: 0.8rem;
-            margin-top: 1rem;
+            margin-top: 1.35rem;
 
             .reports-list {
                 gap: 0.6rem;
