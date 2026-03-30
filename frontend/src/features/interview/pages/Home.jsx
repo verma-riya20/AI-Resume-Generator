@@ -161,10 +161,6 @@ function Home() {
               <input ref={resumeInputref} hidden type="file" id="resume" name="resume" accept=".pdf,application/pdf" onChange={handleFileUpload} />
             </div>
 
-            <div className="divider" aria-hidden="true">
-              OR
-            </div>
-
             <div className="field-group">
               <label htmlFor="selfDescription" className="field-label">Quick Self-Description</label>
               <textarea
@@ -176,7 +172,7 @@ function Home() {
             </div>
 
             <p className="helper-note">
-              Either a Resume or a Self Description is required to generate a personalized plan.
+              Add both resume and self description for better results.
             </p>
 
             <button onClick={handleGenerateReport} type="button" className="cta-button" disabled={loading}>
